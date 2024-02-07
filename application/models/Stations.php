@@ -30,12 +30,13 @@ class Stations extends CI_Model {
 			$userid=$this->session->userdata('user_id'); // Fallback to session-uid, if userid is omitted
 		}
 		$this->db->select('station_profile.*, dxcc_entities.name as station_country, dxcc_entities.end as dxcc_end');
-		$this->db->where('station_logbooks.user_id', $userid);
-		$this->db->join('station_logbooks_relationship', 'station_logbooks.logbook_id = station_logbooks_relationship.station_logbook_id','left outer');
-		$this->db->join('station_profile', 'station_logbooks_relationship.station_location_id = station_profile.station_id', 'inner');
+		$this->db->join('station_logbooks_relationship', 'station_profile.station_id = station_logbooks_relationship.station_location_id','left outer');
+		$this->db->join('station_logbooks', 'station_logbooks_relationship.station_logbook_id = station_logbooks.logbook_id', 'left outer');
 		$this->db->join('dxcc_entities','station_profile.station_dxcc = dxcc_entities.adif','left outer');
+		$this->db->where('station_logbooks.user_id', $userid);
+		$this->db->or_where('station_profile.user_id', $userid);
 		$this->db->group_by('station_profile.station_id');
-		return $this->db->get('station_logbooks');
+		return $this->db->get('station_profile');
 	}
 
 	function callsigns_of_user($userid = null) {
@@ -498,6 +499,29 @@ class Stations extends CI_Model {
 		$this->db->where('user_id', $this->session->userdata('user_id'));
 		$this->db->where('station_id', $id);
 		$query = $this->db->get('station_profile');
+		if ($query->num_rows() == 1) {
+			return true;
+		}
+		return false;
+	}
+
+	public function check_station_is_writable($id) {
+		// check if station belongs to user
+		//$this->db->select('station_id');
+		//$this->db->where('user_id', $this->session->userdata('user_id'));
+		//$this->db->where('station_id', $id);
+		$this->db->select('station_profile.station_id');
+		$this->db->join('station_logbooks_relationship', 'station_profile.station_id = station_logbooks_relationship.station_location_id','left outer');
+		$this->db->join('station_logbooks', 'station_logbooks.logbook_id = station_logbooks_relationship.station_logbook_id', 'left outer');
+		$this->db->group_start();
+		$this->db->group_start();
+		$this->db->where('station_logbooks.user_id', $this->session->userdata('user_id'));
+		$this->db->or_where('station_profile.user_id', $this->session->userdata('user_id'));
+		$this->db->group_end();
+		$this->db->where('station_profile.station_id', $id);
+		$this->db->group_end();
+		$this->db->group_by('station_profile.station_id');
+		return $this->db->get('station_profile');
 		if ($query->num_rows() == 1) {
 			return true;
 		}

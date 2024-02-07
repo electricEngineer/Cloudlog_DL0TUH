@@ -255,7 +255,7 @@ class Logbook_model extends CI_Model
 
     $CI = &get_instance();
     $CI->load->model('stations');
-    if (!$CI->stations->check_station_is_accessible($station_id)) {  // Hard Exit if station_profile not accessible
+    if (!$CI->stations->check_station_is_writable($station_id)) {  // Hard Exit if station_profile not accessible
       return 'Station not accessible<br>';
     }
 
