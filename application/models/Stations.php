@@ -529,7 +529,7 @@ class Stations extends CI_Model {
 	}
 
 	public function check_station_is_modifyable($id) {
-		$this->check_station_is_writable($id);
+		return $this->check_station_is_writable($id);
 	}
 
 	public function get_station_power($id) {

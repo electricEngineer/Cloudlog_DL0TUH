@@ -1049,7 +1049,7 @@ class Logbook_model extends CI_Model
     // be sure that station belongs to user
     $CI = &get_instance();
     $CI->load->model('stations');
-    if (!$CI->stations->check_station_is_accessible($stationId)) {
+    if (!$CI->stations->check_station_is_modifyable($stationId)) {
       return;
     }
 
@@ -1526,7 +1526,7 @@ class Logbook_model extends CI_Model
   // Set Paper to received
   function paperqsl_update($qso_id, $method)
   {
-    if ($this->logbook_model->check_qso_is_accessible($qso_id)) {
+    if ($this->logbook_model->check_qso_is_modifyable($qso_id)) {
 
       $data = array(
         'COL_QSLRDATE' => date('Y-m-d H:i:s'),
@@ -1546,7 +1546,7 @@ class Logbook_model extends CI_Model
   // Set Paper to sent
   function paperqsl_update_sent($qso_id, $method)
   {
-    if ($this->logbook_model->check_qso_is_accessible($qso_id)) {
+    if ($this->logbook_model->check_qso_is_modifyable($qso_id)) {
       if ($method != '') {
         $data = array(
           'COL_QSLSDATE' => date('Y-m-d H:i:s'),
@@ -4659,10 +4659,21 @@ class Logbook_model extends CI_Model
     $this->db->where('station_profile.user_id', $this->session->userdata('user_id'));
     $this->db->where($this->config->item('table_name') . '.COL_PRIMARY_KEY', $id);
     $query = $this->db->get($this->config->item('table_name'));
-    if ($query->num_rows() == 1) {
-      return true;
+
+    $this->db->reset_query();
+    $this->db->select($this->config->item('table_name') . '.station_id');
+    $this->db->where($this->config->item('table_name') . '.COL_PRIMARY_KEY', $id);
+    $query = $this->db->get($this->config->item('table_name'));
+    if ($query->num_rows() != 1) {
+      return false;
     }
-    return false;
+    $this->load->model('stations');
+    
+    return $this->stations->check_station_is_modifyable($query->row()->station_id);
+  }
+
+  public function check_qso_is_modifyable($id) {
+    $this->check_qso_is_accessible($id);
   }
 
   // [JSON PLOT] return array for plot qso for map //
