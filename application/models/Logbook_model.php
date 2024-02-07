@@ -1727,7 +1727,7 @@ class Logbook_model extends CI_Model
   {
     $CI = &get_instance();
     $CI->load->model('stations');
-    if ((!$trusted) && (!$CI->stations->check_station_is_accessible($station_id))) {
+    if ((!$trusted) && (!$CI->stations->check_station_is_readable($station_id))) {
       return;
     }
     $sql = 'select *, dxcc_entities.name as station_country from ' . $this->config->item('table_name') . ' thcv ' .
@@ -1750,7 +1750,7 @@ class Logbook_model extends CI_Model
   {
     $CI = &get_instance();
     $CI->load->model('stations');
-    if ((!$trusted) && (!$CI->stations->check_station_is_accessible($station_id))) {
+    if ((!$trusted) && (!$CI->stations->check_station_is_readable($station_id))) {
       return;
     }
     $sql = "
@@ -3165,7 +3165,7 @@ class Logbook_model extends CI_Model
   {
     // be sure that station belongs to user
     $this->load->model('stations');
-    if (!$this->stations->check_station_is_accessible($station_id) && $apicall == false) {
+    if (!$this->stations->check_station_is_writable($station_id) && $apicall == false) {
       return 'Station not accessible<br>';
     }
 

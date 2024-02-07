@@ -233,7 +233,7 @@ class Stations extends CI_Model {
 		$clean_current = $this->security->xss_clean($current);
 		$clean_new = $this->security->xss_clean($new);
 
-		if (!$this->check_station_is_accessible($clean_new)) {
+		if (!$this->check_station_is_readable($clean_new)) {
 			return;
 		}
 
@@ -503,6 +503,10 @@ class Stations extends CI_Model {
 			return true;
 		}
 		return false;
+	}
+
+	public function check_station_is_readable($id) {
+		return $this->check_station_is_writable($id);
 	}
 
 	public function check_station_is_writable($id) {

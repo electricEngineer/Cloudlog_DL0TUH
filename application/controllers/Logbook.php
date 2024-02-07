@@ -1151,7 +1151,7 @@ class Logbook extends CI_Controller {
 				if (isset($station_id)) {
 					// be sure that station belongs to user
 					$this->load->model('Stations');
-					if (!$this->Stations->check_station_is_accessible($station_id)) {
+					if (!$this->Stations->check_station_is_readable($station_id)) {
 						return "";
 					}
 
@@ -1190,7 +1190,7 @@ class Logbook extends CI_Controller {
 				if (isset($station_id)) {
 					// be sure that station belongs to user
 					$this->load->model('Stations');
-					if (!$this->Stations->check_station_is_accessible($station_id)) {
+					if (!$this->Stations->check_station_is_readable($station_id)) {
 						return 0;
 					}
 
@@ -1220,7 +1220,7 @@ class Logbook extends CI_Controller {
 				if (isset($station_id)) {
 					// be sure that station belongs to user
 					$this->load->model('Stations');
-					if (!$this->Stations->check_station_is_accessible($station_id)) {
+					if (!$this->Stations->check_station_is_readable($station_id)) {
 						return "";
 					}
 
@@ -1251,7 +1251,7 @@ class Logbook extends CI_Controller {
 				if (isset($station_id)) {
 					// be sure that station belongs to user
 					$this->load->model('Stations');
-					if (!$this->Stations->check_station_is_accessible($station_id)) {
+					if (!$this->Stations->check_station_is_readable($station_id)) {
 						return 0;
 					}
 
