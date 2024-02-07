@@ -13,6 +13,22 @@ class Stations extends CI_Model {
         return $this->db->get();
 	}
 
+	function all_with_count_shared() {
+		$this->db->select('station_profile.*, dxcc_entities.name as station_country, dxcc_entities.end as dxcc_end, count('.$this->config->item('table_name').'.station_id) as qso_total, users.user_callsign as owner_callsign');
+		$this->db->from('station_profile');
+		$this->db->join($this->config->item('table_name'),'station_profile.station_id = '.$this->config->item('table_name').'.station_id','left');
+		$this->db->join('station_logbooks_relationship', 'station_profile.station_id = station_logbooks_relationship.station_location_id','left outer');
+		$this->db->join('station_logbooks', 'station_logbooks_relationship.station_logbook_id = station_logbooks.logbook_id', 'left outer');
+		$this->db->join('dxcc_entities','station_profile.station_dxcc = dxcc_entities.adif','left outer');
+		$this->db->join('users', 'station_profile.user_id = users.user_id');
+		$this->db->where('station_logbooks.user_id', $this->session->userdata('user_id'));
+		$this->db->not_group_start();
+		$this->db->where('station_profile.user_id', $this->session->userdata('user_id'));
+		$this->db->group_end();
+		$this->db->group_by('station_profile.station_id');
+		return $this->db->get();
+	}
+
 	// Returns ALL station profiles regardless of user logged in
 	// This is also used by LoTW sync so must not be changed.
 	function all() {
@@ -35,6 +51,25 @@ class Stations extends CI_Model {
 		$this->db->join('dxcc_entities','station_profile.station_dxcc = dxcc_entities.adif','left outer');
 		$this->db->where('station_logbooks.user_id', $userid);
 		$this->db->or_where('station_profile.user_id', $userid);
+		$this->db->group_by('station_profile.station_id');
+		return $this->db->get('station_profile');
+	}
+
+	/*
+		Returns all station locatios that belong to a user or are linked in one of its logbooks
+	*/
+	function all_shared_with_user($userid = null) {
+		if ($userid == null) {
+			$userid=$this->session->userdata('user_id'); // Fallback to session-uid, if userid is omitted
+		}
+		$this->db->select('station_profile.*, dxcc_entities.name as station_country, dxcc_entities.end as dxcc_end');
+		$this->db->join('station_logbooks_relationship', 'station_profile.station_id = station_logbooks_relationship.station_location_id','left outer');
+		$this->db->join('station_logbooks', 'station_logbooks_relationship.station_logbook_id = station_logbooks.logbook_id', 'left outer');
+		$this->db->join('dxcc_entities','station_profile.station_dxcc = dxcc_entities.adif','left outer');
+		$this->db->where('station_logbooks.user_id', $userid);
+		$this->db->or_not_group_start();
+		$this->db->where('station_profile.user_id', $userid);
+		$this->db->group_end();
 		$this->db->group_by('station_profile.station_id');
 		return $this->db->get('station_profile');
 	}

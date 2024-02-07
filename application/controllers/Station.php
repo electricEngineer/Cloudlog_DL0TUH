@@ -24,6 +24,7 @@ class Station extends CI_Controller {
 		$data['is_admin'] = ($this->user_model->authorize(99));
 
 		$data['stations'] = $this->stations->all_with_count();
+		$data['stations_shared'] = $this->stations->all_with_count_shared();
 		$data['current_active'] = $this->stations->find_active();
 		$data['is_there_qsos_with_no_station_id'] = $this->Logbook_model->check_for_station_id();
 
