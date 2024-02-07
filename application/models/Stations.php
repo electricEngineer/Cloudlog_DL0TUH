@@ -3,7 +3,6 @@
 class Stations extends CI_Model {
 
     function all_with_count() {
-
 		$this->db->select('station_profile.*, dxcc_entities.name as station_country, dxcc_entities.end as dxcc_end, count('.$this->config->item('table_name').'.station_id) as qso_total');
         $this->db->from('station_profile');
         $this->db->join($this->config->item('table_name'),'station_profile.station_id = '.$this->config->item('table_name').'.station_id','left');
@@ -23,14 +22,20 @@ class Stations extends CI_Model {
 		return $this->db->get();
 	}
 
+	/*
+		Returns all station locatios that belong to a user or are linked in one of its logbooks
+	*/
 	function all_of_user($userid = null) {
 		if ($userid == null) {
 			$userid=$this->session->userdata('user_id'); // Fallback to session-uid, if userid is omitted
 		}
 		$this->db->select('station_profile.*, dxcc_entities.name as station_country, dxcc_entities.end as dxcc_end');
-		$this->db->where('user_id', $userid);
+		$this->db->where('station_logbooks.user_id', $userid);
+		$this->db->join('station_logbooks_relationship', 'station_logbooks.logbook_id = station_logbooks_relationship.station_logbook_id','left outer');
+		$this->db->join('station_profile', 'station_logbooks_relationship.station_location_id = station_profile.station_id', 'inner');
 		$this->db->join('dxcc_entities','station_profile.station_dxcc = dxcc_entities.adif','left outer');
-		return $this->db->get('station_profile');
+		$this->db->group_by('station_profile.station_id');
+		return $this->db->get('station_logbooks');
 	}
 
 	function callsigns_of_user($userid = null) {
@@ -227,41 +232,61 @@ class Stations extends CI_Model {
 		$clean_current = $this->security->xss_clean($current);
 		$clean_new = $this->security->xss_clean($new);
 
-		// be sure that stations belong to user
-		if ($clean_current != 0) {
-			if (!$this->check_station_is_accessible($clean_current)) {
-				return;
-			}
-		}
 		if (!$this->check_station_is_accessible($clean_new)) {
 			return;
 		}
 
-		// Deselect current default
-		$current_default = array(
-			'station_active' => null,
-		);
-		$this->db->where('user_id', $this->session->userdata('user_id'));
-		$this->db->update('station_profile', $current_default);
+		/*
+			#########################################################################################################################
+			### Legacy code begin. This is left from the old lookup method of the active station location via station_profiles table. 
+			### This is left intentionally because it wasn't checked yet whether this is used somewhere else.
+			### TODO: Check if this method is used somewhere else and remove it otherwise
+			#########################################################################################################################
+		*/
+		// be sure that stations belong to user
+		if ($clean_current != 0) {
+			if (!$this->check_station_is_accessible($clean_current)) {
 
-		// Deselect current default
+				// Deselect current default
+				$current_default = array(
+					'station_active' => null,
+				);
+				$this->db->where('user_id', $this->session->userdata('user_id'));
+				$this->db->update('station_profile', $current_default);
+		
+				// Select new default
+				$newdefault = array(
+					'station_active' => 1,
+				);
+				$this->db->where('user_id', $this->session->userdata('user_id'));
+				$this->db->where('station_id', $clean_new);
+				$this->db->update('station_profile', $newdefault);
+
+			}
+		}
+		/*
+			########################
+			### Legacy code end. ###
+			########################
+		*/
+		
+		//New method using users table
 		$newdefault = array(
-			'station_active' => 1,
+			'active_station_location' => $clean_new,
 		);
 		$this->db->where('user_id', $this->session->userdata('user_id'));
-		$this->db->where('station_id', $clean_new);
-		$this->db->update('station_profile', $newdefault);
+		$this->db->update('users', $newdefault);
 	}
 
 	public function find_active() {
 		$this->db->where('user_id', $this->session->userdata('user_id'));
-		$this->db->where('station_active', 1);
-		$query = $this->db->get('station_profile');
+		$query = $this->db->get('users');
 
-		if($query->num_rows() >= 1) {
+		//TODO: Rewrite could be done without using the if and foreach
+		if($query->num_rows() == 1) {
 			foreach ($query->result() as $row)
 			{
-				return $row->station_id;
+				return $row->active_station_location;
 			}
 		} else {
 			return "0";
@@ -269,8 +294,8 @@ class Stations extends CI_Model {
 	}
 
 	public function find_gridsquare() {
-		$this->db->where('user_id', $this->session->userdata('user_id'));
-		$this->db->where('station_active', 1);
+		$activeStationLocation = $this->find_active();
+		$this->db->where('station_id', $activeStationLocation);
 		$query = $this->db->get('station_profile');
 
 		if($query->num_rows() >= 1) {
@@ -284,10 +309,11 @@ class Stations extends CI_Model {
 	}
 
 	public function find_name() {
-		$this->db->where('user_id', $this->session->userdata('user_id'));
-		$this->db->where('station_active', 1);
+		$activeStationLocation = $this->find_active();
+		$this->db->where('station_id', $activeStationLocation);
 		$query = $this->db->get('station_profile');
 
+		//TODO: Rewrite could be done without using the if and foreach
 		if($query->num_rows() >= 1) {
 			foreach ($query->result() as $row)
 			{
