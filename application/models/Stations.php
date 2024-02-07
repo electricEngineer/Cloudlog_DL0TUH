@@ -528,6 +528,10 @@ class Stations extends CI_Model {
 		return false;
 	}
 
+	public function check_station_is_modifyable($id) {
+		$this->check_station_is_writable($id);
+	}
+
 	public function get_station_power($id) {
 		$this->db->select('station_power');
 		$this->db->where('user_id', $this->session->userdata('user_id'));
