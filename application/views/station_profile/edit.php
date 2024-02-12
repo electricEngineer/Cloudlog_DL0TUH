@@ -58,6 +58,53 @@
 		</div>
 	</div>
 
+	<div class="card">
+		<div class="card-header">
+			<?php echo lang('station_locations_location_shares');?>
+		</div>
+
+		<div class="card-body">
+		<p class="card-text">
+		Here you see all current logbooks this stations is part of. But keep in mind that as long as a station location is in any logbook of a user that the user can add the shared location to all of his other logbooks!
+		</p></div>
+
+	    <div class="table-responsive m-4">
+			<table id="station_logbooks_linked_table" class="table table-hover">
+				<thead class="thead-light">
+					<tr>
+						<th scope="col"><?php echo lang('station_logbook_name_singular'); ?></th>
+						<th scope="col"><?php echo lang('station_logbook_owner_callsign_singular'); ?></th>
+						<th scope="col"><?php echo lang('station_logbook_owner_name_singular'); ?></th>
+						<th scope="col"><?php echo lang('station_logbooks_unlink_station_location'); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+						if ($station_location_shares) {
+							foreach ($station_location_shares->result() as $row) {
+					?>
+					<tr>
+						<td style="text-align: center; vertical-align: middle;"><?php echo $row->logbook_name;?></td>
+						<td style="text-align: center; vertical-align: middle;"><?php echo $row->user_callsign;?></td>
+						<td style="text-align: center; vertical-align: middle;"><?php echo $row->user_name; ?></td>
+						<td style="text-align: center; vertical-align: middle;"><a href="<?php echo site_url('station/delete_location_share/'); ?><?php echo $row->logbook_relation_id;?>" class="btn btn-danger"><i class="fas fa-unlink"></i></a></td>
+					</tr>
+					<?php
+							}
+						} else {
+					?>
+					<tr>
+						<td style="text-align: center; vertical-align: middle;" colspan="2"><?php echo lang('station_logbooks_no_linked_loc'); ?></td>
+						<td style="text-align: center; vertical-align: middle;"></td>
+						<td style="text-align: center; vertical-align: middle;"></td>
+						<td style="text-align: center; vertical-align: middle;"></td>
+					</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
 	<div class="row">
 		<!-- Location Ends -->
 		<div class="col-md">
