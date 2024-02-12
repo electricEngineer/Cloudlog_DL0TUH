@@ -617,6 +617,16 @@ class Stations extends CI_Model {
 		if (($station_lat!=0)&&($station_lng!=0)) { $_jsonresult = array('lat'=>$station_lat,'lng'=>$station_lng,'html'=>$station_active->station_gridsquare,'label'=>$station_active->station_profile_name,'icon'=>'stationIcon'); }
 		return (count($_jsonresult)>0)?(array('station'=>$_jsonresult)):array();
 	}
+
+	public function list_location_shares($id) {
+		$this->db->select('*');
+		$this->db->from('station_logbooks_relationship');
+		$this->db->join('station_logbooks','station_logbooks.logbook_id = station_logbooks_relationship.station_logbook_id','left outer');
+		$this->db->join('users','users.user_id = station_logbooks.user_id','left outer');
+		$this->db->group_by('station_logbooks_relationship.logbook_relation_id');
+		$this->db->where('station_location_id', $id);
+		return $this->db->get();
+	}
 }
 
 ?>

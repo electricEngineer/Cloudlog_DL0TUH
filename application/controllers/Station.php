@@ -147,6 +147,8 @@ class Station extends CI_Controller {
 
 		$data['my_station_profile'] = $station_profile_query->row();
 
+		$data['station_location_shares'] = $this->stations->list_location_shares($id);
+
 		$data['dxcc_list'] = $this->dxcc->list();
 
 		$this->form_validation->set_rules('station_profile_name', 'Station Profile Name', 'required');
@@ -246,4 +248,59 @@ class Station extends CI_Controller {
         header('Content-Type: application/json');
         echo json_encode($return_json);
     }
+
+	/*
+		Deletes the share of a station by its share id
+		@PARAM $share_id is currently the relationship id out of table station_logbooks_relationship
+	*/
+	public function delete_location_share($share_id) {
+		// Clean ID
+		$clean_share_id = $this->security->xss_clean($share_id);
+
+		// be sure that station belongs to user
+		$CI =& get_instance();
+		$CI->load->model('Stations');
+
+		$this->db->select('*');
+		$this->db->from('station_logbooks_relationship');
+		$this->db->where('logbook_relation_id', $share_id);
+		$query = $this->db->get();
+		$location_id = $query->row()->station_location_id;
+		if (!$CI->Stations->check_station_is_accessible($location_id)) {
+			return;
+		}
+
+		// Delete relationship
+		$this->db->where('logbook_relation_id', $share_id);
+		$this->db->delete('station_logbooks_relationship'); 
+		redirect('station/edit/'.$location_id);
+	}
+
+	/*
+		Deletes the share of a station by its share id
+		@PARAM $share_id is currently the relationship id out of table station_logbooks_relationship
+	*/
+	public function create_location_share($location_id_to_share, $logbook_id_to_receive_share) {
+		// Clean ID
+		$clean_location_id_to_share = $this->security->xss_clean($location_id_to_share);
+		$clean_logbook_id_to_receive_share = $this->security->xss_clean($logbook_id_to_receive_share);
+
+		// be sure that station belongs to user
+		$CI =& get_instance();
+		$CI->load->model('Stations');
+		if (!$CI->Stations->check_station_is_accessible($clean_location_id_to_share)) {
+			return;
+		}
+
+		// Create data array with field values
+		$data = array(
+			'station_logbook_id' => $clean_logbook_id_to_receive_share,
+			'station_location_id' =>  $clean_location_id_to_share,
+		);
+
+		// Insert Record
+		$this->db->insert('station_logbooks_relationship', $data); 
+		
+		redirect('station/edit/'.$clean_location_id_to_share);
+	}
 }
