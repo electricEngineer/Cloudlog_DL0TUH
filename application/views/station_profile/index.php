@@ -60,7 +60,7 @@
 					<td style="text-align: center; vertical-align: middle;"><?php echo $row->station_gridsquare;?></td>
 					<td style="text-align: center" data-order="<?php echo $row->station_id;?>">
 						<?php if($row->station_id != $current_active) { ?>
-							<a href="<?php echo site_url('station/set_active/').$current_active."/".$row->station_id; ?>" class="btn btn-outline-secondary btn-sm" onclick="return confirm('<?php echo lang('station_location_confirm_active'); ?> <?php echo $row->station_profile_name; ?>');"><?php echo lang('station_location_set_active'); ?></a>
+							<a href="<?php echo site_url('station/set_active/0').$current_active."/".$row->station_id; ?>" class="btn btn-outline-secondary btn-sm" onclick="return confirm('<?php echo lang('station_location_confirm_active'); ?> <?php echo $row->station_profile_name; ?>');"><?php echo lang('station_location_set_active'); ?></a>
 						<?php } else { ?>
 							<span class="badge text-bg-success"><?php echo lang('station_location_active'); ?></span>
 						<?php } ?>
@@ -102,6 +102,7 @@
 
 <?php if ($stations_shared->num_rows() > 0) { ?>
 <div class="card">
+	<div class="card-header">Locations shared to you</div>
   <div class="card-body">
     <p class="card-text"><?php echo lang('station_location_shared_header_ln1'); ?>
 		The locations you'll find here were shared with you. Currently it is only supported to share stations via mysql querys.
@@ -147,7 +148,7 @@
 					<td style="text-align: center; vertical-align: middle;"><?php echo $row->station_gridsquare;?></td>
 					<td style="text-align: center" data-order="<?php echo $row->station_id;?>">
 						<?php if($row->station_id != $current_active) { ?>
-							<a href="<?php echo site_url('station/set_active/').$current_active."/".$row->station_id; ?>" class="btn btn-outline-secondary btn-sm" onclick="return confirm('<?php echo lang('station_location_confirm_active'); ?> <?php echo $row->station_profile_name; ?>');"><?php echo lang('station_location_set_active'); ?></a>
+							<a href="<?php echo site_url('station/set_active/0').$current_active."/".$row->station_id; ?>" class="btn btn-outline-secondary btn-sm" onclick="return confirm('<?php echo lang('station_location_confirm_active'); ?> <?php echo $row->station_profile_name; ?>');"><?php echo lang('station_location_set_active'); ?></a>
 						<?php } else { ?>
 							<span class="badge text-bg-success"><?php echo lang('station_location_active'); ?></span>
 						<?php } ?>
